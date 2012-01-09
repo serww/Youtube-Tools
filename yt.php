@@ -5,7 +5,7 @@
  * @copyright Mixlion 09.01.2012
  * @version 1.0 beta
  * @link http://mixlion.ru
- * @desc Youtube Tools - Get information and firect links to youtube video
+ * @desc Youtube Tools - Get information and direct links to youtube video
  */
 
 class Youtube_Tools{
