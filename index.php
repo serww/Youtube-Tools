@@ -1,5 +1,5 @@
 <?php
-require 'ygl.php';
+require 'yt.php';
 $manager = new Youtube_Tools();
 
 # Get information about video
