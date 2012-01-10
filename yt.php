@@ -3,7 +3,7 @@
 /**
  * @author Mixlion
  * @copyright Mixlion 09.01.2012
- * @version 1.1 beta
+ * @version 1.2 beta
  * @link http://mixlion.ru
  * @desc Youtube Tools - Get information and direct links to youtube video
  */
