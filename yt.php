@@ -124,7 +124,7 @@ class Youtube_Tools {
             # Link for video
             $link = preg_replace('|&itag='. $numb[1].'$|U', '', $link);
             # Create array of information of video
-            $this->links[$this->formats[$numb[1]] .'-'. $format[1]] = array($this->formats[$numb[1]], $format[1], $link);
+            $this->links[$this->formats[$numb[1]] .'-'. $format[1]] = array($this->formats[$numb[1]], $format[1], str_replace(' ', '%20', $link));
         }
         return $this->links;
     }
@@ -143,11 +143,11 @@ class Youtube_Tools {
         # Define name of video
         $name = empty($name) ? $this->info['title'] : $name;
         if($path[mb_strlen($path, 'utf-8')-1] != '/') $path .= '/';
-        $url = str_replace(' ', '%20', $this->links[$video][2]) . '&title='. urlencode($name);
+        $url = $this->links[$video][2] . '&title='. urlencode($name);
         $ch = curl_init($url);
         # Handle for copy video
         $fo = fopen($path . $name . '.' . $this->links[$video][0], 'w');
-        //curl_setopt($ch, CURLOPT_USERAGENT, $this->user_agent);
+        curl_setopt($ch, CURLOPT_USERAGENT, $this->user_agent);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FILE, $fo);
@@ -247,5 +247,26 @@ class Youtube_Tools {
             }
             return $return;
         }  else return array();
+    }
+
+    /**
+     * Method for getting video and output to browser (test method)
+     * @param string $video - Type video for getting
+     */
+    public function get($video) {
+        if(empty($this->links)) $this->get_links();
+        if(!isset($this->links[$video])) die('Video `'. $video .'` not found');
+
+        $url = $this->links[$video][2] .'&title='.urlencode($this->info['title']);
+        $headers = get_headers($url);
+        foreach($headers as $header){
+            header($header);
+        }
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_USERAGENT, $this->user_agent);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 0);
+        curl_exec($ch);
+        curl_close($ch);
     }
 }

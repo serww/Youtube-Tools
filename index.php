@@ -17,6 +17,7 @@ echo '</pre>';
 
 # Get video links  (must be used $manager->get_video_info())
 $manager->id = 'SqhWFk5wts4';
+$manager->get_video_info();
 echo '<pre>';
 print_r($manager->get_links());
 echo '</pre>';
@@ -25,10 +26,15 @@ echo '</pre>';
 $manager->id = 'SqhWFk5wts4';
 $manager->get_video_info();
 $path = realpath(dirname(__FILE__));
-$manager->save('mp4-640x360', $path);
+$manager->save('mp4-640x360', $path, 'Welcome to Ukraine');
 
 # Video search
 echo '<pre>';
 print_r($manager->search('Ukraine'));
 echo '</pre>';
+
+# Get video and output to browser (must be used $manager->get_video_info() or $manager->get_links()) (test method)
+$manager->id = 'SqhWFk5wts4';
+$manager->get_video_info();
+$manager->get('flv-640x360');
 ?>
