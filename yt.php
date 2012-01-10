@@ -142,13 +142,12 @@ class Youtube_Tools {
 
         # Define name of video
         $name = empty($name) ? $this->info['title'] : $name;
-
         if($path[mb_strlen($path, 'utf-8')-1] != '/') $path .= '/';
-        $url = trim($this->links[$video][2]) . '&title='. urlencode($name);
+        $url = str_replace(' ', '%20', $this->links[$video][2]) . '&title='. urlencode($name);
         $ch = curl_init($url);
         # Handle for copy video
         $fo = fopen($path . $name . '.' . $this->links[$video][0], 'w');
-        curl_setopt($ch, CURLOPT_USERAGENT, $this->user_agent);
+        //curl_setopt($ch, CURLOPT_USERAGENT, $this->user_agent);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FILE, $fo);
