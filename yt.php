@@ -3,12 +3,12 @@
 /**
  * @author Mixlion
  * @copyright Mixlion 09.01.2012
- * @version 1.0 beta
+ * @version 1.1 beta
  * @link http://mixlion.ru
  * @desc Youtube Tools - Get information and direct links to youtube video
  */
 
-class Youtube_Tools{
+class Youtube_Tools {
 
     /**
      * @var array $info - Video data
@@ -27,19 +27,25 @@ class Youtube_Tools{
 
     /**
      * @var string $user_agent - useragent for getting data
+     * Can be edited
      */
     private $user_agent = 'Youtube Tools v.1';
 
     /**
+     * @var bool $proxy - Use proxy
+     * Can be edited (true, false)
+     */
+    private $proxy = true;
+
+    /**
      * @var array $proxy_list - List of the proxy servers
      */
-    private $proxy_list = array(
-        '41.75.201.201:80',
-        '84.237.33.3:3128',
-        '41.75.201.200:80',
-        '200.37.63.11:3128',
-        '41.75.201.198:80'
-    );
+    private $proxy_list = array();
+
+    /**
+     * @var int $proxy_attempts - Number of attempts to use a proxy (Determined automatically)
+     */
+    private $proxy_attempts = 0;
 
     /**
      * @var array $formats - Formats of youtube video
@@ -58,6 +64,15 @@ class Youtube_Tools{
             '45'=>'webm'
         );
 
+    public function __construct(){
+        if($this->proxy){
+            $dir = realpath(dirname(__FILE__));
+            $this->proxy_list = is_file($dir.'/proxy.txt') ? file($dir.'/proxy.txt') : array();
+            if(empty($this->proxy_list)) $this->proxy = false;
+            $this->proxy_attempts = sizeof($this->proxy_list);
+        }
+    }
+
     /**
      * Method for processing getting information about video
      * @param bool $proxy
@@ -70,10 +85,10 @@ class Youtube_Tools{
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, 'http://www.youtube.com/get_video_info?video_id='. $this->id);
         # Use proxy
-        if($proxy){
+        if($proxy && $this->proxy){
             $proxy = $this->proxy_list[($i-1)];
             curl_setopt($ch, CURLOPT_TIMEOUT, 3);
-            curl_setopt($ch, CURLOPT_PROXY, $proxy);
+            curl_setopt($ch, CURLOPT_PROXY, trim($proxy));
         }
         curl_setopt($ch, CURLOPT_USERAGENT, $this->user_agent);
         curl_setopt ($ch, CURLOPT_HEADER, 0);
@@ -85,12 +100,12 @@ class Youtube_Tools{
         parse_str($data, $info);
 
         # Check the returned status and, if necessary, use a proxy
-        # 4 - number of attempts to obtain data
-        if($i<4){
-            if(@$info['status'] != 'ok'){
-                $this->info =  $this->get_video_info(true, ++$i);
-            } else $this->info = $info;
-        } else exit('Video not available');
+        if(@$info['status'] == 'ok')
+            $this->info = $info;
+        elseif($i<$this->proxy_attempts && $this->proxy)
+            $this->info = $this->get_video_info(true, ++$i);
+        else
+            exit('Video not available');
     }
 
     /**
@@ -196,6 +211,7 @@ class Youtube_Tools{
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $data = curl_exec ($ch);
         curl_close ($ch);
+        if(strpos($data, '<?xml') === false) exit('Can\'t processing video data');
         $data = simplexml_load_string($data);
 
         # Total results

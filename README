@@ -1,4 +1,8 @@
 Class Youtube Tools help you easy get information of youtube video.
 You can get direct links to video, copy it to you computer.
 Method search help you do search about youtube videos.
-Examples of work with class you can see at index.php
+Examples of work with class you can see at index.php .
+Variables that can be edited in the class are marked as (can be edited).
+Add your own proxy servers into proxy.txt, every from new line
+---------------------------------------------------------------------------
+In future: add using proxy to save video
