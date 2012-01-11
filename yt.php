@@ -194,7 +194,7 @@ class Youtube_Tools {
      * @param array $need - Needed fields to return, may be id, title, description, author, thumbnails, keywords, player
      * @return array
      */
-    public function search($query, $need = array('id', 'title', 'description',  'author', 'thumbnails', 'keywords', 'player'), $order = 'published', $start = 1, $count = 10) {
+    public function search($query, $need = array('id', 'title', 'description',  'author', 'thumbnails', 'keywords', 'player', 'duration'), $order = 'published', $start = 1, $count = 10) {
         # Orders type
         $allowOrder = array('relevance', 'published', 'viewCount', 'rating');
         if(!in_array($order, $allowOrder)) exit('Wrong type of order');
@@ -220,6 +220,7 @@ class Youtube_Tools {
         if(sizeof($data->entry)>0){
             foreach($data->entry as $entry){
 
+
                 $now = array();
                 if(in_array('id', $need))
                     $now += array('id' => basename($entry->id));
@@ -243,6 +244,9 @@ class Youtube_Tools {
                         2 => (string)$media->group->thumbnail[2]->attributes()->url,
                         3 => (string)$media->group->thumbnail[3]->attributes()->url
                     ));
+                if(in_array('duration', $need))
+                    $now += array('duration' => (int)$media->children('http://gdata.youtube.com/schemas/2007')
+                        ->duration->attributes());
                 $return[] = $now;
             }
             return $return;
