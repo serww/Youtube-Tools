@@ -3,7 +3,7 @@
 /**
  * @author Mixlion
  * @copyright Mixlion 09.01.2012
- * @version 1.2 beta
+ * @version 1.2.1 beta
  * @link http://mixlion.ru
  * @desc Youtube Tools - Get information and direct links to youtube video
  */
@@ -219,8 +219,6 @@ class Youtube_Tools {
         # Parsing data
         if(sizeof($data->entry)>0){
             foreach($data->entry as $entry){
-
-
                 $now = array();
                 if(in_array('id', $need))
                     $now += array('id' => basename($entry->id));
