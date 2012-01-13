@@ -1,40 +1,33 @@
 <?php
 require 'yt.php';
-$manager = new Youtube_Tools();
 
 # Get information about video
-$manager->id = 'SqhWFk5wts4';
-$manager->get_video_info();
+YT::init('SqhWFk5wts4');
 echo '<pre>';
-print_r($manager->info);
+print_r(YT::get_info());
 echo '</pre>';
 
 # Get video data
-$manager->id = 'SqhWFk5wts4';
+YT::init('SqhWFk5wts4');
 echo '<pre>';
-print_r($manager->get_data());
+print_r(YT::get_data());
 echo '</pre>';
 
-# Get video links  (must be used $manager->get_video_info())
-$manager->id = 'SqhWFk5wts4';
-$manager->get_video_info();
+# Get video links
+YT::init('SqhWFk5wts4');
 echo '<pre>';
-print_r($manager->get_links());
+print_r(YT::get_links());
 echo '</pre>';
 
-# Save video (must be used $manager->get_video_info() or $manager->get_links())
-$manager->id = 'SqhWFk5wts4';
-$manager->get_video_info();
-$path = realpath(dirname(__FILE__));
-$manager->save('mp4-640x360', $path, 'Welcome to Ukraine');
+# Save video
+YT::init('SqhWFk5wts4');
+YT::save('mp4-640x360', '.', 'Welcome to Ukraine');
 
 # Video search
 echo '<pre>';
-print_r($manager->search('Ukraine'));
+print_r(YT::search('Ukraine'));
 echo '</pre>';
 
-# Get video and output to browser (must be used $manager->get_video_info() or $manager->get_links()) (test method)
-$manager->id = 'SqhWFk5wts4';
-$manager->get_video_info();
-$manager->get('flv-640x360');
-?>
+# Get video and output to browser
+YT::init('SqhWFk5wts4');
+YT::get('flv-640x360');

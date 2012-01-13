@@ -3,74 +3,90 @@
 /**
  * @author Mixlion
  * @copyright Mixlion 09.01.2012
- * @version 1.2.1 beta
+ * @version 1.3 beta
  * @link http://mixlion.ru
  * @desc Youtube Tools - Get information and direct links to youtube video
  */
 
-class Youtube_Tools {
+class YT {
 
     /**
      * @var array $info - Video data
      */
-    public $info;
+    private static $info;
 
     /**
      * @var string $id - Video id
      */
-    public $id;
+    private static $id;
 
     /**
      * @var array $links - Links array
      */
-    private $links = array();
+    private static $links = array();
+
+    /**
+     * @var array $data - Media information about video
+     */
+    private static $data = array();
 
     /**
      * @var string $user_agent - useragent for getting data
      * Can be edited
      */
-    private $user_agent = 'Youtube Tools v.1';
+    private static $user_agent = 'Youtube Tools v.1';
 
     /**
      * @var bool $proxy - Use proxy
      * Can be edited (true, false)
      */
-    private $proxy = true;
+    private static $proxy = true;
 
     /**
      * @var array $proxy_list - List of the proxy servers
      */
-    private $proxy_list = array();
+    private static $proxy_list = array();
 
     /**
      * @var int $proxy_attempts - Number of attempts to use a proxy (Determined automatically)
      */
-    private $proxy_attempts = 0;
+    private static $proxy_attempts = 0;
 
     /**
      * @var array $formats - Formats of youtube video
      */
-    private $formats = array(
-            '17'=>'3gp',
+    private static $formats = array(
             '5'=>'flv',
+            '6'=>'flv',
             '34'=>'flv',
             '35'=>'flv',
             '18'=>'mp4',
             '22'=>'mp4',
             '37'=>'mp4',
             '38'=>'mp4',
+            '83'=>'mp4',
+            '82'=>'mp4',
+            '85'=>'mp4',
+            '84'=>'mp4',
             '43'=>'webm',
             '44'=>'webm',
-            '45'=>'webm'
+            '45'=>'webm',
+            '46'=>'webm',
+            '100'=>'webm',
+            '101'=>'webm',
+            '102'=>'webm',
+            '13'=>'3gp',
+            '17'=>'3gp'
         );
 
-    public function __construct(){
-        if($this->proxy){
+    public static function init($id = null){
+        if(self::$proxy){
             $dir = realpath(dirname(__FILE__));
-            $this->proxy_list = is_file($dir.'/proxy.txt') ? file($dir.'/proxy.txt') : array();
-            if(empty($this->proxy_list)) $this->proxy = false;
-            $this->proxy_attempts = sizeof($this->proxy_list);
+            self::$proxy_list = is_file($dir.'/proxy.txt') ? file($dir.'/proxy.txt') : array();
+            if(empty(self::$proxy_list)) self::$proxy = false;
+            self::$proxy_attempts = sizeof(self::$proxy_list);
         }
+        self::$id = $id;
     }
 
     /**
@@ -79,18 +95,20 @@ class Youtube_Tools {
      * @param int $i
      * @return array|null
      */
-    public function get_video_info($proxy = false, $i = 0){
-        if(empty($this->id)) die('Enter video id');
+    public static function get_info($proxy = false, $i = 0){
+
+        if(empty(self::$id)) die('Enter video id');
+        if(!empty(self::$info)) return self::$info;
         # Get video data
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'http://www.youtube.com/get_video_info?video_id='. $this->id);
+        curl_setopt($ch, CURLOPT_URL, 'http://www.youtube.com/get_video_info?video_id='. self::$id);
         # Use proxy
-        if($proxy && $this->proxy){
-            $proxy = $this->proxy_list[($i-1)];
+        if($proxy && self::$proxy){
+            $proxy = self::$proxy_list[($i-1)];
             curl_setopt($ch, CURLOPT_TIMEOUT, 3);
             curl_setopt($ch, CURLOPT_PROXY, trim($proxy));
         }
-        curl_setopt($ch, CURLOPT_USERAGENT, $this->user_agent);
+        curl_setopt($ch, CURLOPT_USERAGENT, self::$user_agent);
         curl_setopt ($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $data = curl_exec ($ch);
@@ -100,10 +118,12 @@ class Youtube_Tools {
         parse_str($data, $info);
 
         # Check the returned status and, if necessary, use a proxy
-        if(@$info['status'] == 'ok')
-            $this->info = $info;
-        elseif($i<$this->proxy_attempts && $this->proxy)
-            $this->info = $this->get_video_info(true, ++$i);
+        if(@$info['status'] == 'ok') {
+            self::$info = $info;
+            return $info;
+        }
+        elseif($i<self::$proxy_attempts && self::$proxy)
+            return self::get_info(true, ++$i);
         else
             exit('Video not available');
     }
@@ -112,21 +132,23 @@ class Youtube_Tools {
      * Method for getting direct links to video
      * @return array
      */
-    public function get_links(){
-        $urls = ','.urldecode($this->info['url_encoded_fmt_stream_map']);
+    public static function get_links(){
+        if(!empty(self::$links)) return self::$links;
+        if(empty(self::$info)) self::get_info();
+        $urls = ','.urldecode(self::$info['url_encoded_fmt_stream_map']);
         $links_map = explode(',url=', $urls);
         unset($links_map[0]);
         foreach($links_map as $link){
             # Get number type of video
             preg_match('|\&itag\=([0-9]+)|', $link, $numb);
             # Get information of type of video
-            preg_match('|'.$numb[1].'/([0-9]{2,4}x[0-9]{2,4})|', $this->info['fmt_list'], $format);
+            preg_match('|'.$numb[1].'/([0-9]{2,4}x[0-9]{2,4})|', self::$info['fmt_list'], $format);
             # Link for video
             $link = preg_replace('|&itag='. $numb[1].'$|U', '', $link);
             # Create array of information of video
-            $this->links[$this->formats[$numb[1]] .'-'. $format[1]] = array($this->formats[$numb[1]], $format[1], str_replace(' ', '%20', $link));
+            self::$links[self::$formats[$numb[1]] .'-'. $format[1]] = array(self::$formats[$numb[1]], $format[1], str_replace(' ', '%20', $link));
         }
-        return $this->links;
+        return self::$links;
     }
 
     /**
@@ -135,19 +157,18 @@ class Youtube_Tools {
      * @param $path - Dir to save video
      * @param null|string $name - Name of video (without extension)
      */
-    public function save($video, $path, $name = null){
-        error_reporting(E_ALL);
-        if(empty($this->links)) $this->get_links();
-        if(!isset($this->links[$video])) die('Video `'. $video .'` not found');
+    public static function save($video, $path, $name = null){
+        if(empty(self::$links)) self::get_links();
+        if(!isset(self::$links[$video])) die('Video `'. $video .'` not found');
 
         # Define name of video
-        $name = empty($name) ? $this->info['title'] : $name;
+        $name = empty($name) ? self::$info['title'] : $name;
         if($path[mb_strlen($path, 'utf-8')-1] != '/') $path .= '/';
-        $url = $this->links[$video][2] . '&title='. urlencode($name);
+        $url = self::$links[$video][2] . '&title='. urlencode($name);
         $ch = curl_init($url);
         # Handle for copy video
-        $fo = fopen($path . $name . '.' . $this->links[$video][0], 'w');
-        curl_setopt($ch, CURLOPT_USERAGENT, $this->user_agent);
+        $fo = fopen($path . $name . '.' . self::$links[$video][0], 'w');
+        curl_setopt($ch, CURLOPT_USERAGENT, self::$user_agent);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FILE, $fo);
@@ -160,28 +181,34 @@ class Youtube_Tools {
      * Method for getting data about video
      * @return array
      */
-    public function get_data(){
-        $entry = simplexml_load_file('http://gdata.youtube.com/feeds/mobile/videos/' . $this->id);
+    public static function get_data(){
+        if(!empty(self::$data)) return self::$data;
+        if(empty(self::$info)) self::get_info();
+        $entry = simplexml_load_file('http://gdata.youtube.com/feeds/mobile/videos/' . self::$id);
         $media = $entry->children('http://search.yahoo.com/mrss/');
         $entry->registerXPathNamespace('feed', 'http://www.w3.org/2005/Atom');
         $related = $entry->xpath("feed:link[@rel='http://gdata.youtube.com/schemas/2007#video.related']");
         $related = (string)$related[0]['href'];
         $data = array(
-            'keywords' => $this->info ['keywords'],
-            'title' => $this->info ['title'],
+            'keywords' => self::$info ['keywords'],
+            'title' => self::$info ['title'],
             'description' => (string)$media->group->description,
             'category' => (string)$media->group->category,
-            'duration' => $this->info ['length_seconds'],
-            'views' => $this->info ['view_count'],
-            'rate' => $this->info ['avg_rating'],
-            'thumbnail' => array(
-                'big' => $this->info ['iurlmaxres'],
-                'small' => $this->info ['iurlsd'],
-                'default' => $this->info ['thumbnail_url']
+            'duration' => self::$info ['length_seconds'],
+            'views' => self::$info ['view_count'],
+            'rate' => self::$info ['avg_rating'],
+            'thumbnails' => array(
+                'big' => self::$info ['iurlmaxres'],
+                'small' => self::$info ['iurlsd'],
+                'default' => self::$info ['thumbnail_url'],
+                1 => (string)$media->group->thumbnail[1]->attributes()->url,
+                2 => (string)$media->group->thumbnail[2]->attributes()->url,
+                3 => (string)$media->group->thumbnail[3]->attributes()->url
             ),
             # Link for get related videos
             'related' => $related
         );
+        self::$data = $data;
         return $data;
     }
 
@@ -194,7 +221,7 @@ class Youtube_Tools {
      * @param array $need - Needed fields to return, may be id, title, description, author, thumbnails, keywords, player
      * @return array
      */
-    public function search($query, $need = array('id', 'title', 'description',  'author', 'thumbnails', 'keywords', 'player', 'duration'), $order = 'published', $start = 1, $count = 10) {
+    public static function search($query, $need = array('id', 'title', 'description',  'author', 'thumbnails', 'keywords', 'player', 'duration'), $order = 'published', $start = 1, $count = 10) {
         # Orders type
         $allowOrder = array('relevance', 'published', 'viewCount', 'rating');
         if(!in_array($order, $allowOrder)) exit('Wrong type of order');
@@ -205,7 +232,7 @@ class Youtube_Tools {
 
         # Get data
         $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_USERAGENT, $this->user_agent);
+        curl_setopt($ch, CURLOPT_USERAGENT, self::$user_agent);
         curl_setopt ($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $data = curl_exec ($ch);
@@ -255,17 +282,17 @@ class Youtube_Tools {
      * Method for getting video and output to browser (test method)
      * @param string $video - Type video for getting
      */
-    public function get($video) {
-        if(empty($this->links)) $this->get_links();
-        if(!isset($this->links[$video])) die('Video `'. $video .'` not found');
+    public static function get($video) {
+        if(empty(self::$links)) self::get_links();
+        if(!isset(self::$links[$video])) die('Video `'. $video .'` not found');
 
-        $url = $this->links[$video][2] .'&title='.urlencode($this->info['title']);
+        $url = self::$links[$video][2] .'&title='.urlencode(self::$info['title']);
         $headers = get_headers($url);
         foreach($headers as $header){
             header($header);
         }
         $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_USERAGENT, $this->user_agent);
+        curl_setopt($ch, CURLOPT_USERAGENT, self::$user_agent);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 0);
         curl_exec($ch);
