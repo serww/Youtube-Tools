@@ -8,6 +8,8 @@ Add your own proxy servers into proxy.txt, every from new line
 v 1.3: All methods made ​​static
        Added some screens for get_data method
        Added some video formats
+v 1.4: Changed parsing video method
+       Fixed initialize bug
 
 ---------------------------------------------------------------------------
 In future: add using proxy to save video
