@@ -3,11 +3,7 @@
 /**
  * @author Mixlion
  * @copyright Mixlion 09.01.2012
-<<<<<<< HEAD
  * @version 1.4 beta
-=======
- * @version 1.3 beta
->>>>>>> 549f4ae297bc91ac507d273da6c53957b99e46ef
  * @link http://mixlion.ru
  * @desc Youtube Tools - Get information and direct links to youtube video
  */
@@ -84,10 +80,7 @@ class YT {
         );
 
     public static function init($id = null){
-<<<<<<< HEAD
         self::$data = self::$links = self::$info = null;
-=======
->>>>>>> 549f4ae297bc91ac507d273da6c53957b99e46ef
         if(self::$proxy){
             $dir = realpath(dirname(__FILE__));
             self::$proxy_list = is_file($dir.'/proxy.txt') ? file($dir.'/proxy.txt') : array();
@@ -146,7 +139,6 @@ class YT {
         $urls = ','.urldecode(self::$info['url_encoded_fmt_stream_map']);
         $links_map = explode(',url=', $urls);
         unset($links_map[0]);
-<<<<<<< HEAD
         foreach($links_map as $tmp){
             $links = explode('&url=', $tmp);
             foreach($links as $link) {
@@ -160,17 +152,6 @@ class YT {
                 self::$links[self::$formats[$numb[1]] .'-'. $format[2]] = array(self::$formats[$numb[1]], $format[2], str_replace(' ', '%20', $link));
 
             }
-=======
-        foreach($links_map as $link){
-            # Get number type of video
-            preg_match('|\&itag\=([0-9]+)|', $link, $numb);
-            # Get information of type of video
-            preg_match('|'.$numb[1].'/([0-9]{2,4}x[0-9]{2,4})|', self::$info['fmt_list'], $format);
-            # Link for video
-            $link = preg_replace('|&itag='. $numb[1].'$|U', '', $link);
-            # Create array of information of video
-            self::$links[self::$formats[$numb[1]] .'-'. $format[1]] = array(self::$formats[$numb[1]], $format[1], str_replace(' ', '%20', $link));
->>>>>>> 549f4ae297bc91ac507d273da6c53957b99e46ef
         }
         return self::$links;
     }
