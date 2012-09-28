@@ -146,7 +146,7 @@ class YT {
             # Get information of type of video
             preg_match('#(^|\D)'.$parts[0].'/([0-9]{2,4}x[0-9]{2,4})#', self::$info['fmt_list'], $format);
             # Repair link
-            $parts[1] = str_replace('sig=', 'signature=', $parts[1]);
+            $parts[1] = str_replace(array(' ', 'sig='), array('%20', 'signature='), $parts[1]);
             # Create array of information of video
             self::$links[self::$formats[$parts[0]] .'-'. $format[2]] = array(self::$formats[$parts[0]], $format[2], $parts[1]);
         }
