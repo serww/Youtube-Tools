@@ -138,21 +138,17 @@ class YT {
         if(!empty(self::$links)) return self::$links;
         if(empty(self::$info)) self::get_info();
         $urls = ','.urldecode(self::$info['url_encoded_fmt_stream_map']);
-        $links_map = explode(',url=', $urls);
+        $links_map = explode(',itag=', $urls);
         unset($links_map[0]);
-        foreach($links_map as $tmp){
-            $links = explode('&url=', $tmp);
-            foreach($links as $link) {
-                # Get number type of video
-                preg_match('|\&itag\=([0-9]+)|', $link, $numb);
-                # Get information of type of video
-                preg_match('#(^|\D)'.$numb[1].'/([0-9]{2,4}x[0-9]{2,4})#', self::$info['fmt_list'], $format);
-                # Link for video
-                $link = preg_replace('|&itag='. $numb[1].'$|U', '', $link);
-                # Create array of information of video
-                self::$links[self::$formats[$numb[1]] .'-'. $format[2]] = array(self::$formats[$numb[1]], $format[2], str_replace(' ', '%20', $link));
-
-            }
+        foreach($links_map as $link){
+            # Get number type of video
+            $parts = explode('&url=', $link);
+            # Get information of type of video
+            preg_match('#(^|\D)'.$parts[0].'/([0-9]{2,4}x[0-9]{2,4})#', self::$info['fmt_list'], $format);
+            # Repair link
+            $parts[1] = str_replace('sig=', 'signature=', $parts[1]);
+            # Create array of information of video
+            self::$links[self::$formats[$parts[0]] .'-'. $format[2]] = array(self::$formats[$parts[0]], $format[2], $parts[1]);
         }
         return self::$links;
     }
