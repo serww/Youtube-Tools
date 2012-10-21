@@ -289,10 +289,25 @@ class YT {
         if(!isset(self::$links[$video])) die('Video `'. $video .'` not found');
 
         $url = self::$links[$video][2] .'&title='.urlencode(self::$info['title']);
-        $headers = get_headers($url);
-        foreach($headers as $header){
-            header($header);
+        $headers = get_headers($url,1);
+        if(isset($headers['Location'])) {
+            if(is_array($headers['Location'])) {
+                foreach($headers['Content-Type'] as $k=>$ct) {
+                    if(substr($ct, 0, 5) == 'video') {
+                        if(isset($headers['Location'][$k]))
+                            $url = $headers['Location'][$k];
+                        else $url = $headers['Location'][sizeof($headers['Location'])-1];
+                        break;
+                    }
+                }
+            }  else $url = $headers['Location'];
+            $headers = get_headers($url, 1);
         }
+
+        unset($headers[0]);
+        header('HTTP/1.1 200 OK');
+        foreach($headers as $headerKey=>$headerValue)
+            header($headerKey.': '.$headerValue);
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_USERAGENT, self::$user_agent);
         curl_setopt($ch, CURLOPT_HEADER, 0);
