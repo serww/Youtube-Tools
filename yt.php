@@ -288,27 +288,25 @@ class YT {
         if(empty(self::$links)) self::get_links();
         if(!isset(self::$links[$video])) die('Video `'. $video .'` not found');
 
-        $url = self::$links[$video][2] .'&title='.urlencode(self::$info['title']);
-        $headers = get_headers($url,1);
-        if(isset($headers['Location'])) {
-            if(is_array($headers['Location'])) {
-                foreach($headers['Content-Type'] as $k=>$ct) {
-                    if(substr($ct, 0, 5) == 'video') {
-                        if(isset($headers['Location'][$k]))
-                            $url = $headers['Location'][$k];
-                        else $url = $headers['Location'][sizeof($headers['Location'])-1];
-                        break;
-                    }
-                }
-            }  else $url = $headers['Location'];
-            $headers = get_headers($url, 1);
-        }
+        $url = self::$links[$video][2];
 
-        unset($headers[0]);
-        header('HTTP/1.1 200 OK');
-        foreach($headers as $headerKey=>$headerValue)
-            header($headerKey.': '.$headerValue);
         $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_NOBODY, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_exec($ch);
+        $res = curl_getinfo($ch);
+        curl_close($ch);
+        if($res['content_type'] == 'video/webm') $ext = 'webm';
+        elseif($res['content_type'] == 'video/x-flv') $ext = 'flv';
+        elseif($res['content_type'] == 'video/mp4') $ext = 'mp4';
+        elseif($res['content_type'] == 'video/3gpp') $ext = '3gp';
+        header('Content-Type: '. $res['content_type']);
+        header('Content-Length: '. $res['download_content_length']);
+        header('Content-Disposition: attachment; filename='. urlencode(self::$info['title']).'.'.$ext);
+
+        $ch = curl_init($res['url']);
         curl_setopt($ch, CURLOPT_USERAGENT, self::$user_agent);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 0);
