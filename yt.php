@@ -127,7 +127,7 @@ class YT {
         elseif($i<self::$proxy_attempts && self::$proxy)
             return self::get_info(true, ++$i);
         else
-            exit('Video not available');
+            return false;
     }
 
     /**
