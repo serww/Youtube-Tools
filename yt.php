@@ -56,29 +56,29 @@ class YT {
      * @var array $formats - Formats of youtube video
      */
     private static $formats = array(
-            '5'=>'flv',
-            '6'=>'flv',
-            '34'=>'flv',
-            '35'=>'flv',
-            '18'=>'mp4',
-            '22'=>'mp4',
-            '37'=>'mp4',
-            '38'=>'mp4',
-            '83'=>'mp4',
-            '82'=>'mp4',
-            '85'=>'mp4',
-            '84'=>'mp4',
-            '43'=>'webm',
-            '44'=>'webm',
-            '45'=>'webm',
-            '46'=>'webm',
-            '100'=>'webm',
-            '101'=>'webm',
-            '102'=>'webm',
-            '13'=>'3gp',
-            '17'=>'3gp',
-            '36'=>'3gp'
-        );
+        '5'=>'flv',
+        '6'=>'flv',
+        '34'=>'flv',
+        '35'=>'flv',
+        '18'=>'mp4',
+        '22'=>'mp4',
+        '37'=>'mp4',
+        '38'=>'mp4',
+        '83'=>'mp4',
+        '82'=>'mp4',
+        '85'=>'mp4',
+        '84'=>'mp4',
+        '43'=>'webm',
+        '44'=>'webm',
+        '45'=>'webm',
+        '46'=>'webm',
+        '100'=>'webm',
+        '101'=>'webm',
+        '102'=>'webm',
+        '13'=>'3gp',
+        '17'=>'3gp',
+        '36'=>'3gp'
+    );
 
     public static function init($id = null){
         self::$data = self::$links = self::$info = null;
@@ -189,7 +189,7 @@ class YT {
         $related = (string)$related[0]['href'];
         $data = array(
             'keywords' => self::$info ['keywords'],
-            'title' => self::$info ['title'],
+            'title' => (string)$entry->title,
             'description' => (string)$media->group->description,
             'category' => (string)$media->group->category,
             'duration' => self::$info ['length_seconds'],
@@ -198,7 +198,7 @@ class YT {
             'thumbnails' => array(
                 'big' => self::$info ['iurlmaxres'],
                 'small' => self::$info ['iurlsd'],
-                'default' => self::$info ['thumbnail_url'],
+                'default' => (string)$media->group->thumbnail[0]->attributes()->url,
                 1 => (string)$media->group->thumbnail[1]->attributes()->url,
                 2 => (string)$media->group->thumbnail[2]->attributes()->url,
                 3 => (string)$media->group->thumbnail[3]->attributes()->url
