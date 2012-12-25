@@ -140,11 +140,11 @@ class YT {
         $links_map = explode(',',self::$info['url_encoded_fmt_stream_map']);
         foreach($links_map as $link){
             parse_str($link,$parts);
-            $url = $parts['url'].='&signature='.$parts['sig'];
+            $link = $parts['url'].='&signature='.$parts['sig'];
             # Get information of type of video
             preg_match('#(^|\D)'.$parts['itag'].'/([0-9]{2,4}x[0-9]{2,4})#', self::$info['fmt_list'], $format);
             # Create array of information of video
-            self::$links[self::$formats[$parts['itag']] .'-'. $format[2]] = array(self::$formats[$parts['itag']], $format[2], $url);
+            self::$links[self::$formats[$parts['itag']] .'-'. $format[2]] = array(self::$formats[$parts['itag']], $format[2], $link);
         }
         return self::$links;
     }
