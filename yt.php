@@ -3,7 +3,7 @@
 /**
  * @author Mixlion
  * @copyright Mixlion 09.01.2012
- * @version 1.4 beta
+ * @version 1.5 beta
  * @link http://mixlion.ru
  * @desc Youtube Tools - Get information and direct links to youtube video
  */
@@ -137,19 +137,14 @@ class YT {
     public static function get_links(){
         if(!empty(self::$links)) return self::$links;
         if(empty(self::$info)) self::get_info();
-        $urls = ','.urldecode(self::$info['url_encoded_fmt_stream_map']);
-        $links_map = explode(',url=', $urls);
-        unset($links_map[0]);            
+        $links_map = explode(',',self::$info['url_encoded_fmt_stream_map']);
         foreach($links_map as $link){
-            preg_match('#&itag=([0-9]+)#', $link, $itag);
+            parse_str($link,$parts);
+            $url = $parts['url'].='&signature='.$parts['sig'];
             # Get information of type of video
-            preg_match('#(^|\D)'.$itag[1].'/([0-9]{2,4}x[0-9]{2,4})#', self::$info['fmt_list'], $format);
-            # Repair link
-            $link = str_replace(array(' ', 'sig='), array('%20', 'signature='), $link);
-            $link = preg_replace('#'. $itag[0] .'#', '', $link,1);
-            $link = preg_replace('#&fallback_host=.*\.com#', '', $link);            
+            preg_match('#(^|\D)'.$parts['itag'].'/([0-9]{2,4}x[0-9]{2,4})#', self::$info['fmt_list'], $format);
             # Create array of information of video
-            self::$links[self::$formats[$itag[1]] .'-'. $format[2]] = array(self::$formats[$itag[1]], $format[2], $link);
+            self::$links[self::$formats[$parts['itag']] .'-'. $format[2]] = array(self::$formats[$parts['itag']], $format[2], $url);
         }
         return self::$links;
     }
