@@ -170,6 +170,7 @@ class YT {
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FILE, $fo);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_exec($ch);
         curl_close($ch);
         fclose($fo);
