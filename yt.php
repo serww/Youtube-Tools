@@ -139,6 +139,7 @@ class YT {
         if(empty(self::$info)) self::get_info();
         $links_map = explode(',',self::$info['url_encoded_fmt_stream_map']);
         $fmt_list = explode(',',self::$info['fmt_list']);
+        if(empty($links_map) || (sizeof($links_map) == 1 && empty($links_map[0]))) return false;
         foreach($links_map as $key => $link){
             parse_str($link,$parts);
             $link = $parts['url'].='&signature='.$parts['sig'];
